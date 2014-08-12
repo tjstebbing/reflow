@@ -1,6 +1,6 @@
 {
   "name": "reflow",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Simple to use workflow/transitions helper.",
   "keywords" : ["workflow", "workflows"],
   "scripts": {

@@ -19,7 +19,7 @@ function getState(o, callback) {
 // Define a function that knows how to set the state for your object type.
 function setState(o, state, callback) { 
     o.state = state; 
-    callback(null);
+    callback(null, o);
 };
 
 // Define a workflow, this one has 3 states, start, middle, end. Each state

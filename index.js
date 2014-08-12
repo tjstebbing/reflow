@@ -3,6 +3,7 @@ var async = require("async");
 module.exports = function(get, set, workflow) {
 
     return function(obj, targetState, callback) {
+        console.log("HERE");
         if(!workflow.hasOwnProperty(targetState)) {
             // There is no such state defined
             return callback({err : targetState+' is not a defined state.'});
@@ -10,6 +11,7 @@ module.exports = function(get, set, workflow) {
 
         get(obj, function(err, currentState) {
             if(err) return callback(err);
+            console.log("STATE", currentState);
             var current = workflow[currentState];
             if(!current.hasOwnProperty(targetState)) {
                 // Current state has no transition to target state
@@ -30,12 +32,15 @@ module.exports = function(get, set, workflow) {
                 });
             }, function(conditionsOk) {
                 if(!conditionsOk) return callback(conditionErrors);
-                return set(obj, targetState, function(err) {
+                return set(obj, targetState, function(err, obj) {
                     if(err) return callback(err);
+                    console.log("HM");
                     //Run any trigger functions now state is set
                     async.each(transition.triggers||[], function(t, cb){
+                        console.log('trnasa', obj, t);
                         return t(obj, cb);
                     }, function(err) {
+                        console.log("AND HERE");
                         return callback(err, obj);
                     });
                 });

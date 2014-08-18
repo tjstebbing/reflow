@@ -30,7 +30,7 @@ module.exports = function(get, set, workflow) {
                 });
             }, function(conditionsOk) {
                 if(!conditionsOk) return callback(conditionErrors);
-                return set(obj, targetState, function(err) {
+                return set(obj, targetState, function(err, obj) {
                     if(err) return callback(err);
                     //Run any trigger functions now state is set
                     async.each(transition.triggers||[], function(t, cb){

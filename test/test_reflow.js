@@ -6,6 +6,19 @@ describe("Reflow", function() {
 
     var testBucket = {};
 
+    function waitFor(attr, value, callback) {
+        function wait() {
+            if(!testBucket.hasOwnProperty(attr)) {
+                setTimeout(wait, 200);
+            } else {
+                assert.equal(testBucket[attr], value);
+                callback(null);
+            }
+        }
+        wait();
+    }
+
+
     var workflow = {
         one : {
             two : {
@@ -37,14 +50,12 @@ describe("Reflow", function() {
         cb(null, true);
     }
 
-    function oneToTwoTrigger1(obj, cb) {
+    function oneToTwoTrigger1(obj) {
         testBucket.oneToTwoTrigger1 = true;
-        cb(null);
     }
 
-    function oneToTwoTrigger2(obj, cb) {
+    function oneToTwoTrigger2(obj) {
         testBucket.oneToTwoTrigger2 = true;
-        cb(null);
     }
 
     function failCondition(obj, target, cb) {
@@ -52,9 +63,8 @@ describe("Reflow", function() {
         cb(null, false);
     }
 
-    function failTrigger(obj, cb) {
+    function failTrigger(obj) {
         testBucket.failTrigger = true;
-        cb({badThings:'happened'});
     }
 
     function get(o, callback) {
@@ -81,16 +91,17 @@ describe("Reflow", function() {
             assert.equal(err, undefined);
             assert.equal(testBucket.oneToTwoCond1, true);
             assert.equal(testBucket.oneToTwoCond2, true);
-            assert.equal(testBucket.oneToTwoTrigger1, true);
-            assert.equal(testBucket.oneToTwoTrigger2, true);
-            assert.equal(obj.state, 'two');
-            done();
+            waitFor('oneToTwoTrigger1', true, function() {
+                waitFor('oneToTwoTrigger2', true, function() {
+                    assert.equal(obj.state, 'two');
+                    done();
+                });
+            });
         });
     });
 
     it("should perform a valid transition with a failing trigger", function(done) {
         transition(obj, 'three', function(err){
-            assert.equal(testBucket.failTrigger, true);
             assert.equal(obj.state, 'three');
             done();
         });

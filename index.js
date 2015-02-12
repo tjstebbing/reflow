@@ -7,6 +7,7 @@ module.exports = function(get, set, workflow) {
             // There is no such state defined
             return callback({err : targetState+' is not a defined state.'});
         }
+        var extras = Array.prototype.slice.call(arguments, 3);
 
         get(obj, function(err, currentState) {
             if(err) return callback(err);
@@ -16,10 +17,10 @@ module.exports = function(get, set, workflow) {
                 return callback({err : targetState + ' is not a valid transition from state ' + currentState});
             }
             var transition = current[targetState];
-            var conditionErrors = []
+            var conditionErrors = [];
             //Run any condition functions to see if we can proceed
             async.every(transition.conditions||[], function(cond, cb) {
-                return cond(obj, targetState, function(err, bool) {
+                return cond.apply(null, [obj, targetState, function(err, bool) {
                     if(err) {
                         conditionErrors.push(err);
                         return cb(false);
@@ -27,7 +28,7 @@ module.exports = function(get, set, workflow) {
                         conditionErrors.push({err : 'condition failed: '+ cond.name});
                     }
                     return cb(bool);
-                });
+                }].concat(extras));
             }, function(conditionsOk) {
                 if(!conditionsOk) return callback(conditionErrors);
                 return set(obj, targetState, function(err, obj) {
@@ -35,7 +36,7 @@ module.exports = function(get, set, workflow) {
                     //Run any trigger functions now state is set
                     (transition.triggers||[]).forEach(function(t) {
                         process.nextTick(function() {
-                            return t(obj);
+                            return t.apply(null,[obj].concat(extras));
                         });
                     });
                     return callback(null, obj);
@@ -43,5 +44,5 @@ module.exports = function(get, set, workflow) {
 
             });
         });
-    }
-}
+    };
+};

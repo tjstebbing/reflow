@@ -122,3 +122,11 @@ var orderWorkflow = {
     received : {}
 };
 ```
+
+## Passing contexts to triggers and conditions
+
+any arguments passed to the transition function after the callback will be
+passed as extra positional arguments to both condition and trigger functions,
+this is handy when you need to pass context information to triggers and 
+conditions.
+

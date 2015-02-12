@@ -63,7 +63,8 @@ describe("Reflow", function() {
         cb(null, false);
     }
 
-    function failTrigger(obj) {
+    function failTrigger(obj, context) {
+        assert.equal(context.context, true);
         testBucket.failTrigger = true;
     }
 
@@ -104,7 +105,7 @@ describe("Reflow", function() {
         transition(obj, 'three', function(err){
             assert.equal(obj.state, 'three');
             done();
-        });
+        }, {context : true});
     });
 
     it("should fail to transition a valid transition with conditions that fail", function(done) {
